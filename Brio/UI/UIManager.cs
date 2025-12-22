@@ -1,10 +1,11 @@
-﻿using Brio.Config;
+using Brio.Config;
 using Brio.Game.GPose;
 using Brio.Input;
 using Brio.IPC;
 using Brio.UI.Controls;
 using Brio.UI.Windows;
 using Brio.UI.Windows.Specialized;
+using Brio.Xtension;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface.ImGuiFileDialog;
 using Dalamud.Interface.Textures.TextureWraps;
@@ -38,6 +39,8 @@ public class UIManager : IDisposable
     private readonly PosingGraphicalWindow _graphicalWindow;
     private readonly CameraWindow _cameraWindow;
     private readonly LightWindow _lightWindow;
+
+	private readonly XtensionMain _xtensionMain;
 
     private readonly ITextureProvider _textureProvider;
     private readonly IToastGui _toastGui;
@@ -90,6 +93,8 @@ public class UIManager : IDisposable
             MCDFWindow mCDFWindow,
             LightWindow lightWindow,
 
+			XtensionMain xtensionMain,
+
             PenumbraService penumbraService,
             GlamourerService glamourerService
         )
@@ -119,6 +124,8 @@ public class UIManager : IDisposable
         _mCDFWindow = mCDFWindow;
         _lightWindow = lightWindow;
 
+		_xtensionMain = xtensionMain;
+
         _framework = framework;
 
         _penumbraService = penumbraService;
@@ -143,12 +150,15 @@ public class UIManager : IDisposable
         _windowSystem.AddWindow(_mCDFWindow);
         _windowSystem.AddWindow(_lightWindow);
 
+		_windowSystem.AddWindow(_xtensionMain);
+
         _gPoseService.OnGPoseStateChange += OnGPoseStateChange;
         _configurationService.OnConfigurationChanged += ApplySettings;
 
         _pluginInterface.UiBuilder.Draw += DrawUI;
         _pluginInterface.UiBuilder.OpenConfigUi += ShowSettingsWindow;
-        _pluginInterface.UiBuilder.OpenMainUi += ShowMainWindow;
+        // _pluginInterface.UiBuilder.OpenMainUi += ShowMainWindow;
+        _pluginInterface.UiBuilder.OpenMainUi += ShowXtensionWindow;
 
         ApplySettings();
     }
@@ -188,6 +198,13 @@ public class UIManager : IDisposable
         _toastGui.ShowError(message);
     }
 
+	public void ToggleXtensionWindow(){
+		_xtensionMain.IsOpen = !_xtensionMain.IsOpen;
+	}
+	public void ShowXtensionWindow(){
+		_xtensionMain.IsOpen = true;
+	}
+
     public void ToggleMainWindow() => _mainWindow.IsOpen = !_mainWindow.IsOpen;
     public void ToggleSettingsWindow() => _settingsWindow.IsOpen = !_settingsWindow.IsOpen;
     public void ToggleWelcomeWindow() => _updateWindow.IsOpen = !_updateWindow.IsOpen;
@@ -195,7 +212,8 @@ public class UIManager : IDisposable
     private void OnGPoseStateChange(bool newState)
     {
         if(_configurationService.Configuration.Interface.OpenBrioBehavior == OpenBrioBehavior.OnGPoseEnter)
-            _mainWindow.IsOpen = newState;
+			_xtensionMain.IsOpen = newState;
+            // _mainWindow.IsOpen = newState;
     }
 
     private void ApplySettings()
@@ -230,7 +248,8 @@ public class UIManager : IDisposable
     {
         if(InputManagerService.ActionKeysPressedLastFrame(InputAction.Interface_ToggleBrioWindow))
         {
-            _mainWindow.IsOpen = !_mainWindow.IsOpen;
+            // _mainWindow.IsOpen = !_mainWindow.IsOpen;
+            _xtensionMain.IsOpen = !_xtensionMain.IsOpen;
         }
         if(InputManagerService.ActionKeysPressedLastFrame(InputAction.Interface_ToggleBindPromptWindow))
         {
@@ -273,6 +292,7 @@ public class UIManager : IDisposable
         _pluginInterface.UiBuilder.OpenMainUi -= ShowMainWindow;
 
         _mainWindow.Dispose();
+		_xtensionMain.Dispose();
 
         _windowSystem.RemoveAllWindows();
 

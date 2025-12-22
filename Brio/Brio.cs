@@ -1,4 +1,4 @@
-﻿using Brio.Config;
+using Brio.Config;
 using Brio.Core;
 using Brio.Entities;
 using Brio.Files;
@@ -24,6 +24,7 @@ using Brio.UI;
 using Brio.UI.Windows;
 using Brio.UI.Windows.Specialized;
 using Brio.Web;
+using Brio.Xtension;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -211,6 +212,8 @@ public class Brio : IDalamudPlugin
         serviceCollection.AddSingleton<MCDFWindow>();
         serviceCollection.AddSingleton<PosingGraphicalWindow>();
         serviceCollection.AddSingleton<LightWindow>();
+
+        serviceCollection.AddSingleton<XtensionMain>();
 
         return serviceCollection;
     }

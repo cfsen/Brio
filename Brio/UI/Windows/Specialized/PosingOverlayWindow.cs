@@ -1,4 +1,4 @@
-﻿using Brio.Capabilities.Posing;
+using Brio.Capabilities.Posing;
 using Brio.Capabilities.World;
 using Brio.Config;
 using Brio.Core;
@@ -292,6 +292,7 @@ public class PosingOverlayWindow : Window, IDisposable
         var clicked = new List<ClickableItem>();
         var hovered = new List<ClickableItem>();
 
+
         foreach(var clickable in clickables)
         {
             var start = new Vector2(clickable.ScreenPosition.X - clickable.Size, clickable.ScreenPosition.Y - clickable.Size);
@@ -309,6 +310,7 @@ public class PosingOverlayWindow : Window, IDisposable
                     clicked.Add(clickable);
                     clickable.WasClicked = true;
                     uiState.AnyClickableClicked = true;
+
                 }
             }
         }
@@ -317,11 +319,12 @@ public class PosingOverlayWindow : Window, IDisposable
         {
             posing.Selected = clicked[0].Item;
 
-            if(clicked.Count > 1)
+            if(clicked.Count > 1 && false) // XT: disable menu on left click
             {
                 _selectingFrom = clicked;
                 ImGui.OpenPopup(_boneSelectPopupName);
             }
+
         }
 
         if(hovered.Count != 0 && clicked.Count == 0)
@@ -547,7 +550,7 @@ public class PosingOverlayWindow : Window, IDisposable
 
     private unsafe void DrawGizmo(PosingCapability posing, OverlayUIState uiState)
     {
-        if(!uiState.DrawGizmo)
+        if(!uiState.DrawGizmo || uiState.PopupOpen) // TX: hide gizmo when menu is open, to avoid accidental input
             return;
 
         if(posing.Selected.Value is None)

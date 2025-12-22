@@ -1,4 +1,4 @@
-﻿using Brio.Config;
+using Brio.Config;
 using Brio.Core;
 using Brio.Entities;
 using Brio.Game.Core;
