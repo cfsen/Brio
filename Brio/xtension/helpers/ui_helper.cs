@@ -12,27 +12,30 @@ public static class XUI {
     public static void Button(
             Action closure,
             FontAwesomeIcon icon,
+            String id,
             Vector2? size = null,
             Inline inline = Inline.No,
             bool enable = true
             ) {
 
         Action pop_enable = EnableIf(enable); 
-        if(ImBrio.FontIconButton(icon, size ?? Size.BtnMid)){
-            closure();
+        using (ImRaii.PushFont(UiBuilder.IconFont)){
+            if(ImGui.Button($"{icon.ToIconString()}###xtui_btn_{id}", size ?? Size.BtnMid)) {
+                closure();
+            }
         }
         pop_enable();
         PushInline(inline);
     }
 
     public static void WidgetHeader(String header, FontAwesomeIcon icon) {
-		ImGui.Dummy(new(0, Size.BtnSmall.Y/5));
-		ImGui.Spacing();
-		using(ImRaii.PushFont(UiBuilder.IconFont)) {
-			ImGui.Text(icon.ToIconString());
-		}
-		ImGui.SameLine();
-		ImGui.Text(header);
+        ImGui.Dummy(new(0, Size.BtnSmall.Y/5));
+        ImGui.Spacing();
+        using(ImRaii.PushFont(UiBuilder.IconFont)) {
+            ImGui.Text(icon.ToIconString());
+        }
+        ImGui.SameLine();
+        ImGui.Text(header);
         ImGui.Separator();
     }
 
