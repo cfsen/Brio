@@ -8,6 +8,9 @@ indent_size = 4
 [*.{cs,vb}]
 #### Naming styles ####
 
+dotnet_diagnostic.IDE0022.severity = none
+dotnet_diagnostic.IDE0160.severity = none
+dotnet_diagnostic.IDE0011.severity = none
 dotnet_diagnostic.IDE0055.severity = none
 dotnet_diagnostic.IDE0058.severity = none
 # Naming rules
