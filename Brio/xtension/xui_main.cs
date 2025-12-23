@@ -85,58 +85,15 @@ public class XtensionMain : Window, IDisposable
         LazyInit();
         _xwidgets?.DrawWidgetSelector();
         _xwidgets?.DrawWidgets();
-        // DrawEntitySelection();
     }
 
     private void LazyInit(){
         if(_rec == null && _entityManager.RootEntity != null) {
             _rec = new RootEntityContainers(_entityManager.RootEntity);
 
-            _xwidgets = new XTWidgetSelector(_rec, _entitySelector);
+            _xwidgets = new XTWidgetSelector(_rec, _entitySelector, _entityManager);
         }
     }
-
-    private void DrawEntitySelection(){
-        if(!_gPoseService.IsGPosing) {
-            using(ImRaii.PushColor(ImGuiCol.Text, UIConstants.GizmoRed)) {
-                ImGui.Text("Open GPose to use Brio!");
-            }
-            return;
-        }
-
-        if(_entityManager.RootEntity is null) {
-            return;
-        }
-        var rootEntity = _entityManager.RootEntity;
-
-        IEndObject? container = ImRaii.Child("###entity_hierarchy_container",
-                new Vector2(-1, ImGui.GetTextLineHeight() * 18f),
-                true);
-        if(!container.Success) {
-            return;
-        }
-
-        using(container) {
-            _entitySelector.Draw(rootEntity);
-
-            // if(_entityManager.SelectedEntityIds.Count > 1) {
-            // 	using var color = ImRaii.PushColor(ImGuiCol.Text, ThemeManager.CurrentTheme.Accent.AccentColor);
-            // 	ImGui.Text($"{_entityManager.SelectedEntityIds.Count} selected");
-            // }
-        }
-
-        // NOTE: this draws all the extra context sensitive UI
-        //
-        // try
-        // {
-        // 	EntityHelpers.DrawEntitySection(_entityManager.SelectedEntity);
-        // }
-        // catch(Exception ex)
-        // {
-        // 	Brio.Log.Error(ex, $"Failed to draw entity section: [ {_entityManager?.SelectedEntity?.FriendlyName ?? "Unknown"} ] ");
-        // }
-    }
-
 
     public void Dispose()
     {
