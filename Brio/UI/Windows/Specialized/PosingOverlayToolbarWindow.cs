@@ -1,4 +1,4 @@
-﻿using Brio.Capabilities.Actor;
+using Brio.Capabilities.Actor;
 using Brio.Capabilities.Posing;
 using Brio.Capabilities.World;
 using Brio.Config;
@@ -60,7 +60,7 @@ public class PosingOverlayToolbarWindow : Window
 
     public override void PreOpenCheck()
     {
-        IsOpen = _overlayWindow.IsOpen;
+        IsOpen = false; // XT: disable toolbar window
 
         _gameInputService.AllowEscape = true;
 
