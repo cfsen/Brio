@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using Brio.UI.Controls.Core;
+using Brio.Entities;
 using Brio.UI.Controls.Stateless;
 using Brio.UI.Entitites;
 using Brio.Xtension.ui.widgets;
@@ -13,6 +13,7 @@ namespace Brio.Xtension.ui;
 
 public class XTWidgetSelector {
     private readonly RootEntityContainers rec;
+    private readonly EntityManager entMan;
     private readonly EntityHierarchyView entView;
     private readonly List<XTWidget> widgets;
 
@@ -20,28 +21,22 @@ public class XTWidgetSelector {
 
     public XTWidgetSelector(
             RootEntityContainers _rec,
-            EntityHierarchyView _entView
+            EntityHierarchyView _entView,
+            EntityManager _entMan
             ) {
         rec = _rec;
         entView = _entView;
+        entMan = _entMan;
 
         widgets = InitializeWidgets();
         ActiveWidgets = XTWidgetCategory.Posing;
     }
 
-    private List<XTWidget> InitializeWidgets(){
-        List<XTWidget> _widgets = [];
-
-        XTWidgetActors actors = new(rec.Actors!, entView);
-        XTWidgetCameras cameras = new(rec.Cameras!, entView);
-        XTWidgetEnv env = new(rec.Environment!, entView);
-
-        _widgets.Add(actors);
-        _widgets.Add(cameras);
-        _widgets.Add(env);
-
-        return _widgets;
-    }
+    private List<XTWidget> InitializeWidgets() => [
+        new XTWidgetActors(rec.Actors!, entView, entMan),
+        new XTWidgetCameras(rec.Cameras!, entView),
+        new XTWidgetEnv(rec.Environment!, entView),
+    ];
 
     public void DrawWidgets() {
         try {
@@ -51,52 +46,56 @@ public class XTWidgetSelector {
                 }
             }
         }
-        catch (InvalidOperationException) {
-            // Collection mutated during draw
-            Brio.Log.Warning("XT: InvalidOp: Widget iteration, collection mutated.");
+        catch (InvalidOperationException e) {
+            Brio.Log.Warning($"XT: DrawWidgets: InvalidOp: {e}"); // expected on entities being destroyed
+        }
+        catch (Exception e) {
+            Brio.Log.Error($"XT: DrawWidgets: Unhandled: {e}");
         }
     }
 
-    private delegate void WidgetToggleDelegate(XTWidgetCategory category);
-    private void WidgetToggle(XTWidgetCategory category){
-        ActiveWidgets ^= category;
-    }
     public void DrawWidgetSelector(){
-        SelectorBtn(XTWidgetCategory.Selection, FontAwesomeIcon.Crosshairs, WidgetToggle);
-        SelectorBtn(XTWidgetCategory.Expression, FontAwesomeIcon.Portrait, WidgetToggle);
-        SelectorBtn(XTWidgetCategory.Posing, FontAwesomeIcon.PersonRays, WidgetToggle);
-        SelectorBtn(XTWidgetCategory.Scene, FontAwesomeIcon.PeopleLine, WidgetToggle);
-        SelectorBtn(XTWidgetCategory.Camera, FontAwesomeIcon.Camera, WidgetToggle);
-        SelectorBtn(XTWidgetCategory.Lighting, FontAwesomeIcon.Sun, WidgetToggle);
-        SelectorBtn(XTWidgetCategory.Config, FontAwesomeIcon.Cog, WidgetToggle, Inline.No);
+        SelectorBtn(XTWidgetCategory.Selection, FontAwesomeIcon.Crosshairs);
+        SelectorBtn(XTWidgetCategory.Expression, FontAwesomeIcon.Portrait);
+        SelectorBtn(XTWidgetCategory.Posing, FontAwesomeIcon.PersonRays);
+        SelectorBtn(XTWidgetCategory.Scene, FontAwesomeIcon.PeopleLine);
+        SelectorBtn(XTWidgetCategory.Camera, FontAwesomeIcon.Camera);
+        SelectorBtn(XTWidgetCategory.Lighting, FontAwesomeIcon.Sun);
+        SelectorBtn(XTWidgetCategory.Config, FontAwesomeIcon.Cog, Inline.No);
     }
 
+    private void WidgetToggle(XTWidgetCategory category) => ActiveWidgets ^= category;
+
     private static readonly Vector2 _widgetBtnSize = new(40 * ImGuiHelpers.GlobalScale, 40 * ImGuiHelpers.GlobalScale);
-    private static readonly uint _activeButton = 0xFF47028B;
+    private static readonly uint _btnColActive = 0xFF47028B;
     private enum Inline { Yes, No };
+
     private void SelectorBtn(
             XTWidgetCategory widget,
             FontAwesomeIcon icon,
-            WidgetToggleDelegate closure,
-            Inline inline = Inline.Yes
-            ) {
+            Inline inline = Inline.Yes,
+            Action<XTWidgetCategory>? closure = null
+            ){
 
-        bool should_pop = false;
-        if(ActiveWidgets.HasFlag(widget)) {
-            ImGui.PushStyleColor(ImGuiCol.Button, _activeButton);
-            should_pop = true;
-        }
+        Action pop_style = PushToggleBtnStyle(ActiveWidgets.HasFlag(widget), _btnColActive, inline);
 
         if(ImBrio.FontIconButton(icon, _widgetBtnSize)){
+            closure ??= WidgetToggle;
             closure(widget);
         }
 
-        if(should_pop){
-            ImGui.PopStyleColor();
-        }
+        pop_style();
 
-        if(inline != Inline.No) {
-            ImGui.SameLine();
+        static Action PushToggleBtnStyle(bool condition, uint col, Inline inline){
+            if(!condition)
+                return inline == Inline.Yes ? static () => { ImGui.SameLine(); } : static () => { };
+
+            ImGui.PushStyleColor(ImGuiCol.Button, col);
+
+            return inline == Inline.Yes ? static () => {
+                ImGui.PopStyleColor();
+                ImGui.SameLine();
+            } : static () => { ImGui.PopStyleColor(); };
         }
     }
 }
