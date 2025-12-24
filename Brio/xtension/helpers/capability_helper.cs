@@ -47,3 +47,13 @@ public static class XtensionHelpers {
         }
     }
 }
+
+public static class XTCap {
+    public static T? EntityLastValid<T>(Entity? ent, ref T? store) where T : Capability {
+        if(ent == null) return store;
+        if(ent.HasCapability<T>()) {
+            store = ent.GetCapability<T>();
+        }
+        return store ;
+    }
+}

@@ -89,14 +89,8 @@ public class XTWidgetCameras(
     }
 
     private BrioCameraCapability? _lastValidCam = null;
-    private BrioCameraCapability? CameraLastValid(Entity? ent) {
-        if(ent == null) return _lastValidCam;
-        if(ent.HasCapability<BrioCameraCapability>()) {
-            _lastValidCam = ent.GetCapability<BrioCameraCapability>();
-            return _lastValidCam;
-        }
-        return _lastValidCam;
-    }
+    private BrioCameraCapability? CameraLastValid(Entity? ent) => 
+        XTCap.EntityLastValid<BrioCameraCapability>(ent, ref _lastValidCam);
 
     private CameraControllerData GetCameraControllerData(BrioCameraCapability? ent){
         if(ent is not BrioCameraCapability cap) return mock();
