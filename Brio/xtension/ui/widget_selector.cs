@@ -8,6 +8,7 @@ using Brio.Xtension.ui.widgets;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
 using Dalamud.Interface.Utility;
+using Dalamud.Interface.Utility.Raii;
 
 namespace Brio.Xtension.ui;
 
@@ -34,7 +35,7 @@ public class XTWidgetSelector {
 
     private List<XTWidget> InitializeWidgets() => [
         new XTWidgetActors(rec.Actors!, entView, entMan),
-        new XTWidgetCameras(rec.Cameras!, entView),
+        new XTWidgetCameras(rec.Cameras!, entView, entMan),
         new XTWidgetEnv(rec.Environment!, entView),
     ];
 
@@ -79,9 +80,11 @@ public class XTWidgetSelector {
 
         Action pop_style = PushToggleBtnStyle(ActiveWidgets.HasFlag(widget), _btnColActive, inline);
 
-        if(ImBrio.FontIconButton(icon, _widgetBtnSize)){
-            closure ??= WidgetToggle;
-            closure(widget);
+        using (ImRaii.PushFont(UiBuilder.IconFont)){
+            if(ImGui.Button($"{icon.ToIconString()}###xtui_btn_main_widget_toggle{widget}", _widgetBtnSize)) {
+                closure ??= WidgetToggle;
+                closure(widget);
+            }
         }
 
         pop_style();
