@@ -154,9 +154,9 @@ public class XTWidgetCameras(
 
         Action pop_enable = XUI.EnableIf(CameraContainer.HasCapability<CameraContainerCapability>());
 
-        XUI.Button(SpawnCamera, FontAwesomeIcon.Plus, "SpawnCamera", XUI.Size.BtnMid, XUI.Inline.Yes);
-        XUI.Button(SpawnFixedCamera, FontAwesomeIcon.PlusCircle, "SpawnedFixedCamera", XUI.Size.BtnMid, XUI.Inline.Yes);
-        XUI.Button(DestroyCamera, FontAwesomeIcon.Minus, "DestroyCamera", XUI.Size.BtnMid);
+        XUI.Button(SpawnCamera, FontAwesomeIcon.Plus, "SpawnCamera");
+        XUI.Button(SpawnFixedCamera, FontAwesomeIcon.PlusCircle, "SpawnedFixedCamera");
+        XUI.Button(DestroyCamera, FontAwesomeIcon.Minus, "DestroyCamera", XUI.Size.BtnMid, XUI.Inline.No);
 
         pop_enable();
     }
