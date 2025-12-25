@@ -25,6 +25,7 @@ using Brio.UI.Windows;
 using Brio.UI.Windows.Specialized;
 using Brio.Web;
 using Brio.Xtension;
+using Brio.Xtension.services;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -214,6 +215,8 @@ public class Brio : IDalamudPlugin
         serviceCollection.AddSingleton<LightWindow>();
 
         serviceCollection.AddSingleton<XtensionMain>();
+        serviceCollection.AddSingleton<XTInputKeyboardHandler>();
+        serviceCollection.AddSingleton<XTServiceDispatcher>();
 
         return serviceCollection;
     }

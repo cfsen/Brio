@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Brio.Entities;
+using Brio.Game.Posing;
 using Brio.UI.Controls.Stateless;
 using Brio.UI.Entitites;
 using Brio.Xtension.ui.widgets;
@@ -15,7 +16,9 @@ namespace Brio.Xtension.ui;
 public class XTWidgetSelector {
     private readonly RootEntityContainers rec;
     private readonly EntityManager entMan;
+    private readonly PosingService posingService;
     private readonly EntityHierarchyView entView;
+
     private readonly List<XTWidget> widgets;
 
     private XTWidgetCategory ActiveWidgets;
@@ -23,18 +26,20 @@ public class XTWidgetSelector {
     public XTWidgetSelector(
             RootEntityContainers _rec,
             EntityHierarchyView _entView,
-            EntityManager _entMan
+            EntityManager _entMan,
+            PosingService _posingService
             ) {
         rec = _rec;
         entView = _entView;
         entMan = _entMan;
+        posingService = _posingService;
 
         widgets = InitializeWidgets();
         ActiveWidgets = XTWidgetCategory.Posing;
     }
 
     private List<XTWidget> InitializeWidgets() => [
-        new XTWidgetActors(rec.Actors!, entView, entMan),
+        new XTWidgetActors(rec.Actors!, entView, entMan, posingService),
         new XTWidgetCameras(rec.Cameras!, entView, entMan),
         new XTWidgetEnv(rec.Environment!, entView),
     ];

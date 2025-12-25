@@ -1,22 +1,20 @@
 using Brio.Config;
 using Brio.Core;
 using Brio.Entities;
-using Brio.Entities.Core;
 using Brio.Game.Core;
 using Brio.Game.GPose;
+using Brio.Game.Posing;
 using Brio.Game.Scene;
 using Brio.MCDF.Game.Services;
-using Brio.UI.Controls.Core;
 using Brio.UI.Entitites;
-using Brio.UI.Theming;
 using Brio.UI.Windows;
+using Brio.UI.Windows.Specialized;
+using Brio.Xtension.services;
 using Brio.Xtension.ui;
 using Dalamud.Bindings.ImGui;
-using Dalamud.Interface.Utility.Raii;
 using Dalamud.Interface.Windowing;
 using System;
 using System.Numerics;
-using static Dalamud.Interface.Utility.Raii.ImRaii;
 
 namespace Brio.Xtension;
 
@@ -25,21 +23,23 @@ namespace Brio.Xtension;
 
 public class XtensionMain : Window, IDisposable
 {
-    private readonly SettingsWindow _settingsWindow;
-    private readonly UpdateWindow _infoWindow;
-    private readonly LibraryWindow _libraryWindow;
-    private readonly ConfigurationService _configurationService;
-    private readonly EntityManager _entityManager;
-    private readonly EntityHierarchyView _entitySelector;
-    private readonly SceneService _sceneService;
-    private readonly ProjectWindow _projectWindow;
-    private readonly GPoseService _gPoseService;
-    private readonly AutoSaveService _autoSaveService;
-    private readonly HistoryService _groupedUndoService;
-    private readonly MCDFService _mCDFService;
-
     private RootEntityContainers? _rec;
     private XTWidgetSelector? _xwidgets;
+    private readonly AutoSaveService _autoSaveService;
+    private readonly ConfigurationService _configurationService;
+    private readonly EntityHierarchyView _entitySelector;
+    private readonly EntityManager _entityManager;
+    private readonly GPoseService _gPoseService;
+    private readonly HistoryService _groupedUndoService;
+    private readonly LibraryWindow _libraryWindow;
+    private readonly MCDFService _mCDFService;
+    private readonly PosingOverlayWindow _posingOverlay;
+    private readonly PosingService _posingService;
+    private readonly ProjectWindow _projectWindow;
+    private readonly SceneService _sceneService;
+    private readonly SettingsWindow _settingsWindow;
+    private readonly UpdateWindow _infoWindow;
+    private readonly XTServiceDispatcher _XTSD;
 
     public XtensionMain(
             ConfigurationService configService,
@@ -52,7 +52,10 @@ public class XtensionMain : Window, IDisposable
             GPoseService gPoseService,
             ProjectWindow projectWindow,
             AutoSaveService autoSaveService,
-            MCDFService mCDFService
+            MCDFService mCDFService,
+            XTServiceDispatcher XTSD,
+            PosingOverlayWindow posingOverlayWindow,
+            PosingService posingService
             )
         : base("##brio_xtension_main_window", ImGuiWindowFlags.AlwaysAutoResize, true) 
     {
@@ -70,6 +73,9 @@ public class XtensionMain : Window, IDisposable
         _projectWindow = projectWindow;
         _autoSaveService = autoSaveService;
         _mCDFService = mCDFService;
+        _XTSD = XTSD;
+        _posingOverlay = posingOverlayWindow;
+        _posingService = posingService;
 
         // lazy init
         _rec = null;
@@ -85,13 +91,14 @@ public class XtensionMain : Window, IDisposable
         LazyInit();
         _xwidgets?.DrawWidgetSelector();
         _xwidgets?.DrawWidgets();
+        if(_posingOverlay.IsOpen) _posingOverlay.Draw();
     }
 
     private void LazyInit(){
         if(_rec == null && _entityManager.RootEntity != null) {
             _rec = new RootEntityContainers(_entityManager.RootEntity);
 
-            _xwidgets = new XTWidgetSelector(_rec, _entitySelector, _entityManager);
+            _xwidgets = new XTWidgetSelector(_rec, _entitySelector, _entityManager, _posingService);
         }
     }
 
