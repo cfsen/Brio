@@ -35,6 +35,7 @@ public class XtensionMain : Window, IDisposable
     private readonly MCDFService _mCDFService;
     private readonly PosingOverlayWindow _posingOverlay;
     private readonly PosingService _posingService;
+    private readonly XTSelectionService _selectionService;
     private readonly ProjectWindow _projectWindow;
     private readonly SceneService _sceneService;
     private readonly SettingsWindow _settingsWindow;
@@ -55,7 +56,8 @@ public class XtensionMain : Window, IDisposable
             MCDFService mCDFService,
             XTServiceDispatcher XTSD,
             PosingOverlayWindow posingOverlayWindow,
-            PosingService posingService
+            PosingService posingService,
+            XTSelectionService selectionService
             )
         : base("##brio_xtension_main_window", ImGuiWindowFlags.AlwaysAutoResize, true) 
     {
@@ -76,6 +78,7 @@ public class XtensionMain : Window, IDisposable
         _XTSD = XTSD;
         _posingOverlay = posingOverlayWindow;
         _posingService = posingService;
+        _selectionService = selectionService;
 
         // lazy init
         _rec = null;
@@ -98,7 +101,7 @@ public class XtensionMain : Window, IDisposable
         if(_rec == null && _entityManager.RootEntity != null) {
             _rec = new RootEntityContainers(_entityManager.RootEntity);
 
-            _xwidgets = new XTWidgetSelector(_rec, _entitySelector, _entityManager, _posingService);
+            _xwidgets = new XTWidgetSelector(_rec, _entitySelector, _entityManager, _posingService, _selectionService);
         }
     }
 

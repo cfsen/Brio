@@ -17,4 +17,5 @@ public enum XTWidgetCategory {
     Scene = 32,
     Selection = 64,
     Config = 128,
+    Actors = 256,
 }

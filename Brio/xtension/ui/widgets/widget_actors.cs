@@ -13,6 +13,7 @@ using Brio.Library.Filters;
 using Brio.UI.Controls.Stateless;
 using Brio.UI.Entitites;
 using Brio.Xtension.helpers;
+using Brio.Xtension.services;
 using Dalamud.Interface;
 
 namespace Brio.Xtension.ui.widgets;
@@ -21,11 +22,12 @@ public class XTWidgetActors(
         Entity _actorContainer,
         EntityHierarchyView entView,
         EntityManager entMan,
-        PosingService posingService
+        PosingService posingService,
+        XTSelectionService selectionService
         ) : XTWidget {
 
     private readonly Entity ActorContainer = _actorContainer;
-    public override XTWidgetCategory WidgetCategory => XTWidgetCategory.Posing;
+    public override XTWidgetCategory WidgetCategory => XTWidgetCategory.Actors;
 
     // checkboxes
     private bool _chkLoadPosition = false;
@@ -71,13 +73,13 @@ public class XTWidgetActors(
 
         Action pop_actor_selected = XUI.EnableIf(posecap != null);
 
-        XUI.Text(LastActorName(_lastValidActor));
-        XUI.Checkbox(ref _chkLoadPosition, "Position", "LoadPosition");
-        XUI.Checkbox(ref _chkLoadRotation, "Rotation", "LoadRotation");
-        XUI.Checkbox(ref _chkLoadScale, "Scale", "LoadScale", XUI.Inline.No);
+        XUI.Text(LastActorName(selectionService.LastPosing));
+        XUI.Checkbox(ref _chkLoadPosition, "Position", "LoadPosition", XUI.Inline.Yes, enable: !_chkLoadExpression);
+        XUI.Checkbox(ref _chkLoadRotation, "Rotation", "LoadRotation", XUI.Inline.Yes, enable: !_chkLoadExpression);
+        XUI.Checkbox(ref _chkLoadScale, "Scale", "LoadScale", XUI.Inline.No, enable: !_chkLoadExpression);
         XUI.Checkbox(ref _chkLoadExpression, "Expression", "LoadExpression");
         XUI.Checkbox(ref _chkLoadBody, "Body", "LoadBody", XUI.Inline.No);
-        // XUI.Checkbox(ref _chkfreezeOnLoad, "Freeze", "LoadBody");
+        // XUI.Checkbox(ref _chkfreezeOnLoad, "Freeze", "FreezeOnLoad");
         // XUI.Checkbox(ref _chkxfmModel, "xfmModel", "xfmModel");
         // XUI.Checkbox(ref _chkxfmModelOverride, "xfmModOverride", "xfmModOverride", XUI.Inline.No);
 
@@ -120,9 +122,8 @@ public class XTWidgetActors(
     private void SetPoseControllerData(PoseControllerData posedat) {
     }
 
-    private PosingCapability? _lastValidActor = null;
     private PosingCapability? ActorLastValid(Entity? ent) 
-        => XTCap.EntityLastValid<PosingCapability>(ent, ref _lastValidActor);
+        => selectionService.UpdateLastPosing(ent);
 
     //
     // service aliases
@@ -153,10 +154,6 @@ public class XTWidgetActors(
         => () => { FileUIHelpers.ShowExportPoseModal(pose_cap); };
 
     private Action ImportPose(PosingCapability pose_cap) => () => { 
-        // TODO: body/expression loading misalignment.
-        // pending further investigation.
-        // loading expression and gesture seems to have inconsistencies
-        // and can result in the head being mispositioned occasionally
         BoneFilter filter = new(posingService);
 
         TransformComponents xfmComp = TransformComponents.None;
@@ -166,37 +163,46 @@ public class XTWidgetActors(
 
         PoseImporterOptions importerOptions = new(filter, xfmComp, _chkxfmModel);
 
-        TypeFilter typeFilter = new("Poses", typeof(CMToolPoseFile), typeof(PoseFile));
+        TypeFilter typeFilter = new("Poses", typeof(PoseFile));
 
         // TODO: directory quick pose loading:
         // this call sets: 
         // var lastDirectories = _configurationService.Configuration.Library.LastBrowsePaths;
         // which should be ideal for indexing and switching poses
-        LibraryManager.GetWithFilePicker(typeFilter, (r) => {
-                if(r is CMToolPoseFile cmPose) {
-                pose_cap.ImportPose(
-                        cmPose,
-                        options: (_chkLoadExpression || _chkLoadBody) ? null : importerOptions,
-                        asExpression: !_chkLoadBody && _chkLoadExpression,
-                        asBody: !_chkLoadExpression && _chkLoadBody,
-                        freezeOnLoad: _chkfreezeOnLoad,
-                        transformComponents: _chkLoadExpression ? null : xfmComp,
-                        applyModelTransformOverride: _chkLoadExpression ? null : _chkxfmModelOverride
-                        );
-                }
-                else if(r is PoseFile pose) {
-                pose_cap.ImportPose(
-                        pose,
-                        options: (_chkLoadExpression || _chkLoadBody) ? null : importerOptions,
-                        asExpression: !_chkLoadBody && _chkLoadExpression,
-                        asBody: !_chkLoadExpression && _chkLoadBody,
-                        freezeOnLoad: _chkfreezeOnLoad,
-                        transformComponents: _chkLoadExpression ? null : xfmComp,
-                        applyModelTransformOverride: _chkLoadExpression ? null : _chkxfmModelOverride
-                        );
-                }
-        });
+        LibraryManager.GetWithFilePicker(typeFilter, FilePickerCallback);
+
+        void FilePickerCallback(object r){
+            if(r is PoseFile pose) ImportPose(pose_cap, pose, xfmComp);
+        }
     };
+
+
+    private void ImportPose(PosingCapability posecap, PoseFile pose, TransformComponents xfmComp){
+        if(_chkLoadExpression == _chkLoadBody) ImportFullPose(posecap, pose);
+        if(_chkLoadBody) ImportGesture(posecap, pose, xfmComp);
+        if(_chkLoadExpression) ImportExpression(posecap, pose);
+    }
+
+    private void ImportFullPose(PosingCapability posecap, PoseFile pose){
+        posecap.ImportPose(pose,
+                options: posecap.PosingService.DefaultIPCImporterOptions,
+                asExpression: false, asBody: false, transformComponents: null,
+                freezeOnLoad: _chkfreezeOnLoad, applyModelTransformOverride: _chkxfmModelOverride);
+    }
+
+    private void ImportExpression(PosingCapability posecap, PoseFile pose){
+        posecap.ImportPose(pose,
+                options: null,
+                asExpression: true, asBody: false, transformComponents: null,
+                freezeOnLoad: _chkfreezeOnLoad, applyModelTransformOverride: null);
+    }
+
+    private void ImportGesture(PosingCapability posecap, PoseFile pose, TransformComponents xfmComp){
+        posecap.ImportPose(pose,
+                options: null,
+                asExpression: false, asBody: true, transformComponents: xfmComp,
+                freezeOnLoad: _chkfreezeOnLoad, applyModelTransformOverride: _chkxfmModelOverride);
+    }
 
 
     private void ImportAPose(PosingCapability poseCap) {

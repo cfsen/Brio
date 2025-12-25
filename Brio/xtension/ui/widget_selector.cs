@@ -5,6 +5,7 @@ using Brio.Entities;
 using Brio.Game.Posing;
 using Brio.UI.Controls.Stateless;
 using Brio.UI.Entitites;
+using Brio.Xtension.services;
 using Brio.Xtension.ui.widgets;
 using Dalamud.Bindings.ImGui;
 using Dalamud.Interface;
@@ -17,6 +18,7 @@ public class XTWidgetSelector {
     private readonly RootEntityContainers rec;
     private readonly EntityManager entMan;
     private readonly PosingService posingService;
+    private readonly XTSelectionService selectionService;
     private readonly EntityHierarchyView entView;
 
     private readonly List<XTWidget> widgets;
@@ -27,19 +29,22 @@ public class XTWidgetSelector {
             RootEntityContainers _rec,
             EntityHierarchyView _entView,
             EntityManager _entMan,
-            PosingService _posingService
+            PosingService _posingService,
+            XTSelectionService _selectionService
             ) {
         rec = _rec;
         entView = _entView;
         entMan = _entMan;
         posingService = _posingService;
+        selectionService = _selectionService;
 
         widgets = InitializeWidgets();
-        ActiveWidgets = XTWidgetCategory.Posing;
+        ActiveWidgets = XTWidgetCategory.Actors;
     }
 
     private List<XTWidget> InitializeWidgets() => [
-        new XTWidgetActors(rec.Actors!, entView, entMan, posingService),
+        new XTWidgetActors(rec.Actors!, entView, entMan, posingService, selectionService),
+        new XTWidgetIPC(entMan, selectionService),
         new XTWidgetCameras(rec.Cameras!, entView, entMan),
         new XTWidgetEnv(rec.Environment!, entView),
     ];
@@ -63,7 +68,7 @@ public class XTWidgetSelector {
     public void DrawWidgetSelector(){
         SelectorBtn(XTWidgetCategory.Selection, FontAwesomeIcon.Crosshairs);
         SelectorBtn(XTWidgetCategory.Expression, FontAwesomeIcon.Portrait);
-        SelectorBtn(XTWidgetCategory.Posing, FontAwesomeIcon.PersonRays);
+        SelectorBtn(XTWidgetCategory.Actors, FontAwesomeIcon.PersonRays);
         SelectorBtn(XTWidgetCategory.Scene, FontAwesomeIcon.PeopleLine);
         SelectorBtn(XTWidgetCategory.Camera, FontAwesomeIcon.Camera);
         SelectorBtn(XTWidgetCategory.Lighting, FontAwesomeIcon.Sun);
