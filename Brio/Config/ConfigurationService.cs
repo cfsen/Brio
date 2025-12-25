@@ -48,6 +48,7 @@ public class ConfigurationService : IDisposable
         Save();
     }
 
+    // XT: (unchanged) force debug off
 #if DEBUG
     private static bool s_isDebug => true;
 #else
