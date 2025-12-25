@@ -217,6 +217,7 @@ public class Brio : IDalamudPlugin
         serviceCollection.AddSingleton<XtensionMain>();
         serviceCollection.AddSingleton<XTInputKeyboardHandler>();
         serviceCollection.AddSingleton<XTServiceDispatcher>();
+        serviceCollection.AddSingleton<XTSelectionService>();
 
         return serviceCollection;
     }
