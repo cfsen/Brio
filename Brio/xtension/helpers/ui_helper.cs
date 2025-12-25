@@ -165,8 +165,8 @@ public static class XUI {
     //
 
     private static void DegToRad(ref float deg) => deg *= MathF.PI/180.0f;
-    private static void RadToDeg(ref float rad) => rad *= 180.0f/MathF.PI; 
-    private static void Invert(ref float val) => val *= -1.0f; 
+    private static void RadToDeg(ref float rad) => rad *= 180.0f/MathF.PI;
+    private static void Invert(ref float val) => val *= -1.0f;
     private static void FloatSanitize(ref float val) => val = val == -0.0f ? 0.0f : val;
     private static void RadModulo(ref float rad) => rad %= MathF.Tau;
 
