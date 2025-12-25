@@ -1,4 +1,4 @@
-﻿using Brio.Config;
+using Brio.Config;
 using Brio.Game.GPose;
 using Dalamud.Game.ClientState.Keys;
 using Dalamud.Plugin.Services;
@@ -26,7 +26,7 @@ public class InputManagerService : IDisposable
         _gPoseService = gPoseService;
         _framework = framework;
 
-        _framework.Update += OnFrameworkUpdate;
+        // _framework.Update += OnFrameworkUpdate; // XT: disable key handling
 
         Instance = this;
     }
@@ -150,7 +150,7 @@ public class InputManagerService : IDisposable
 
     public void Dispose()
     {
-        _framework.Update -= OnFrameworkUpdate;
+        // _framework.Update -= OnFrameworkUpdate; // XT: disable key handling
 
         GC.SuppressFinalize(this);
     }
