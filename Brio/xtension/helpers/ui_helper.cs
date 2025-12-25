@@ -42,8 +42,8 @@ public static class XUI {
             Action closure,
             FontAwesomeIcon icon,
             String id,
-            Vector2? size = null,
-            Inline inline = Inline.No,
+            Vector2? size = null, // default: BtnMid
+            Inline inline = Inline.Yes,
             bool enable = true
             ) {
 
