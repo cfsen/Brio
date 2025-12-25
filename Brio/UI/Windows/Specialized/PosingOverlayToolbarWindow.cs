@@ -60,6 +60,7 @@ public class PosingOverlayToolbarWindow : Window
 
     public override void PreOpenCheck()
     {
+        // IsOpen = _overlayWindow.IsOpen;
         IsOpen = false; // XT: disable toolbar window
 
         _gameInputService.AllowEscape = true;
