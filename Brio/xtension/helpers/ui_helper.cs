@@ -77,8 +77,16 @@ public static class XUI {
 
     }
 
-    public static void Checkbox(ref bool state, string label, string id, Inline inline = Inline.Yes){
+    public static void Checkbox(
+            ref bool state,
+            string label,
+            string id,
+            Inline inline = Inline.Yes,
+            bool enable = true
+            ){
+        Action pop_enable = EnableIf(enable);
         ImGui.Checkbox($"{label}###xtui_checkbox_{id}", ref state);
+        pop_enable();
         PushInline(inline);
     }
 
