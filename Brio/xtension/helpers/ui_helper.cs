@@ -77,6 +77,11 @@ public static class XUI {
 
     }
 
+    public static void Checkbox(ref bool state, string label, string id, Inline inline = Inline.Yes){
+        ImGui.Checkbox($"{label}###xtui_checkbox_{id}", ref state);
+        PushInline(inline);
+    }
+
     //
     // DragFloat
     //
