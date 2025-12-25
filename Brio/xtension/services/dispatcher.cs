@@ -1,5 +1,7 @@
 using System;
+using Brio.Capabilities.Core;
 using Brio.Config;
+using Brio.Entities.Core;
 using Brio.Game.Posing;
 using Brio.Input;
 using Brio.UI.Windows.Specialized;
@@ -10,15 +12,18 @@ public class XTServiceDispatcher : IDisposable {
     private readonly PosingService _posingService;
     private readonly ConfigurationService _configService;
     private readonly PosingOverlayWindow _posingOverlay;
+    private readonly XTSelectionService _selectionService;
 
     public XTServiceDispatcher(
             PosingService posingService,
             ConfigurationService configurationService,
-            PosingOverlayWindow posingOverlayWindow
+            PosingOverlayWindow posingOverlayWindow,
+            XTSelectionService selectionService
             ){
         _posingService = posingService;
         _configService = configurationService;
         _posingOverlay = posingOverlayWindow;
+        _selectionService = selectionService;
     }
 
     public void HandleKeyboardAction(InputAction action){
@@ -35,8 +40,10 @@ public class XTServiceDispatcher : IDisposable {
                 _posingOverlay.IsOpen = !_posingOverlay.IsOpen;
                 break;
             case InputAction.Posing_Undo:
+                _selectionService?.LastPosing?.Undo();
                 break;
             case InputAction.Posing_Redo:
+                _selectionService?.LastPosing?.Redo();
                 break;
             case InputAction.Posing_Esc:
                 break;
